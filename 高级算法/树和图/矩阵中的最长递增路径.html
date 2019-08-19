@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+    /**
+给定一个整数矩阵，找出最长递增路径的长度。
+
+对于每个单元格，你可以往上，下，左，右四个方向移动。 你不能在对角线方向上移动或移动到边界外（即不允许环绕）。
+
+示例 1:
+
+输入: nums = 
+[
+  [9,9,4],
+  [6,6,8],
+  [2,1,1]
+] 
+输出: 4 
+解释: 最长递增路径为 [1, 2, 6, 9]。
+示例 2:
+
+输入: nums = 
+[
+  [3,4,5],
+  [3,2,6],
+  [2,2,1]
+] 
+输出: 4 
+解释: 最长递增路径是 [3, 4, 5, 6]。注意不允许在对角线方向上移动。
+*/
+    /**
+     * @param {number[][]} matrix
+     * @return {number}
+     */
+    //使用动态规划的思想，对于矩阵中的一个点，以他为结尾的路径最大值为四个方向小于它的最大值+1；
+    //Math.max(p2 + 1, p4 + 1, p6 + 1, p8 + 1, 1);
+    //如果都不大的话则一定只能为开头返回为1
+    var longestIncreasingPath = function (matrix) {
+        if (matrix.length == 0) {
+            return 0;
+        }
+        var cache = [];
+        for (var k = 0; k < matrix.length; k++) {
+            cache.push([]);
+            for (var q = 0; q < matrix[k].length; q++) {
+                cache[k][q] = 0;
+            }
+        }
+        var maxResult = 1;
+        for (var i = 0; i < matrix.length; i++) {
+            for (var j = 0; j < matrix[i].length; j++) {
+                var temp = maxlong(i, j, matrix, cache)
+                if (maxResult < temp) {
+                    maxResult = temp;
+                }
+            }
+        }
+        return maxResult;
+    };
+    console.log(longestIncreasingPath([
+        [9, 9, 4],
+        [6, 6, 8],
+        [2, 1, 1]
+    ]));
+
+    function maxlong(i, j, matrix, cache) {
+        if ((i >= 0) && (j >= 0) && (j < matrix[0].length) && (i < matrix.length) && (cache[i][j])) {
+            return cache[i][j];
+        }
+        //2号位最大值
+        var p2 = 0
+        //2号位存在
+        if (i - 1 >= 0) {
+            //它的值大于2号位
+            if (matrix[i][j] > matrix[i - 1][j]) {
+                p2 = maxlong(i - 1, j, matrix, cache);
+            } else {
+                p2 = 0;
+            }
+        } else {
+            p2 = 0;
+        }
+
+        //4号位的最大值
+        var p4 = 0
+        //4号位存在
+        if (j + 1 < matrix[0].length) {
+            //它的值大于4号位
+            if (matrix[i][j] > matrix[i][j + 1]) {
+                p4 = maxlong(i, j + 1, matrix, cache);
+            } else {
+                p4 = 0;
+            }
+        } else {
+            p4 = 0;
+        }
+
+        //6号位的最大值
+        var p6 = 0
+        //4号位存在
+        if (i + 1 < matrix.length) {
+            //它的值大于4号位
+            if (matrix[i][j] > matrix[i + 1][j]) {
+                p6 = maxlong(i + 1, j, matrix, cache);
+            } else {
+                p6 = 0;
+            }
+        } else {
+            p6 = 0;
+        }
+
+        var p8 = 0
+
+        //8号位存在
+        if (j - 1 >= 0) {
+            //它的值大于4号位
+            if (matrix[i][j] > matrix[i][j - 1]) {
+                p8 = maxlong(i, j - 1, matrix, cache);
+            } else {
+                p8 = 0;
+            }
+        } else {
+            p8 = 0;
+        }
+        if (p2 == 0 && p4 == 0 && p6 == 0 && p8 == 0) {
+            cache[i][j] = 1;
+            return 1;
+        }
+        var result = Math.max(p2 + 1, p4 + 1, p6 + 1, p8 + 1, 1);
+        cache[i][j] = result;
+        return result;
+    }
+</script>
+
+</html>

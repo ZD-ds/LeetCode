@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+    /**
+给定一个整数数组 nums，按要求返回一个新数组 counts。数组 counts 有该性质： counts[i] 的值是  nums[i] 右侧小于 nums[i] 的元素的数量。
+
+示例:
+
+输入: [5,2,6,1]
+输出: [2,1,1,0] 
+解释:
+5 的右侧有 2 个更小的元素 (2 和 1).
+2 的右侧仅有 1 个更小的元素 (1).
+6 的右侧有 1 个更小的元素 (1).
+1 的右侧有 0 个更小的元素.
+*/
+    /**
+     * @param {number[]} nums
+     * @return {number[]}
+     */
+    var count_small = 0;
+    var treeNode = function (val) {
+        this.val = val;
+        this.left = null;
+        this.right = null;
+        this.count = 0;
+    }
+    var BST_insert = function (node, insert_node, count_small) {
+        if (node.val >= insert_node.val) {
+            /*插入的结点更小,被比较结点(即node)的count++，然后插入到左子树(如果不为空)*/
+            node.count++;
+            if (node.left) {
+                BST_insert(node.left, insert_node, count_small);
+            } else {
+                node.left = insert_node;
+            }
+        } else {
+            /*插入的结点更大，需要在右子树(如果不为空)继续找*/
+            count_small += node.count + 1;
+            if (node.right) {
+                BST_insert(node.right, insert_node, count_small);
+            } else {
+                /*当前右子树为空，插入结点作为当前结点右孩子*/
+                node.right = insert_node;
+            }
+        }
+    }
+
+    var countSmaller = function (nums) {
+        var n = nums.length;
+        if (n == 0) {
+            return [];
+        }
+        var count = [];
+        count.push(0);
+        //建立一个二叉搜索树
+        var node = new treeNode(nums[n - 1]);
+
+        for (var i = 1; i < n; i++) {
+            count_small = 0;
+            BST_insert(node, new treeNode(numsp[n - 1 - i]));
+            count.push(count_small);
+        }
+        /*最后不要忘记删除树节点*/
+        delete node;
+        /*push_back的时候是逆序的，此时只要将count数组reverse即可*/
+        count.reverse();
+        return count;
+    };
+</script>
+
+</html>
