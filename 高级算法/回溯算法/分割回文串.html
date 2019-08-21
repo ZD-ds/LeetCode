@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+    /**
+给定一个字符串 s，将 s 分割成一些子串，使每个子串都是回文串。
+
+返回 s 所有可能的分割方案。
+
+示例:
+
+输入: "aab"
+输出:
+[
+  ["aa","b"],
+  ["a","a","b"]
+]
+*/
+    /**
+     * @param {string} s
+     * @return {string[][]}
+     */
+    //我的思路是先把字符串所有分割情况列出，然后进行判断，但是超时了
+    //优化，在树的遍历时就进行优化(。。。。还是没有抗住)
+    // var partition = function (s) {
+    //     var result = [];
+    //     if (s.length == 0) {
+    //         return [];
+    //     }
+    //     if (s.length == 0) {
+    //         return [
+    //             [s]
+    //         ];
+    //     }
+    //     var arr = s.split("");
+    //     var n = arr.length - 1;
+    //     putbox([], arr, n, 0, result);
+    //     //得到所有分割后的结果
+
+    //     return result;
+    // };
+
+    // function checkhuiwen(str) {
+    //     var len = str.length;
+    //     var str1 = "";
+    //     for (var i = len - 1; i >= 0; i--) {
+    //         str1 += str[i];
+    //     }
+    //     return str1 == str;
+
+    // }
+
+    // function putbox(res, arr, n, index, result) {
+    //     if (index >= n) {
+    //         var temp = [];
+    //         var start = 0;
+    //         for (var i = 0; i < res.length; i++) {
+    //             if (res[i]) {
+    //                 //在这里进行代码优化检查是否为回文不是就退出
+    //                 var x = arr.slice(start, i + 1).join("");
+    //                 if (checkhuiwen(x)) {
+    //                     temp.push(x);
+    //                 } else {
+    //                     return;
+    //                 }
+    //                 start = i + 1;
+    //             }
+    //         }
+    //         var y = arr.slice(start).join("");
+    //         if (checkhuiwen(y)) {
+    //             temp.push(y);
+    //         } else {
+    //             return;
+    //         }
+    //         result.push(temp);
+    //         return;
+    //     }
+    //     //这里是两个选择要不0要不1
+    //     res.push(0);
+    //     putbox(res, arr, n, index + 1, result);
+    //     res.pop();
+    //     res.push(1);
+    //     putbox(res, arr, n, index + 1, result);
+    //     res.pop();
+    // }
+
+
+    //查找的思路使用动态规划
+    var n = 0;
+
+    function partition(s) {
+        var dp = []; //dp[i][j]是指i到j的字符串是否为回文串
+
+        var res = []; //存储全局的数据
+        for (var q = 0; q < s.length; q++) {
+            dp.push([]);
+        }
+        n = s.length;
+        for (var i = n - 1; i >= 0; i--) {
+            for (var j = i; j < n; j++) {
+                if (i == j) {
+                    dp[i][j] = 1;
+                    //相邻的如果相等
+                } else if (i == j - 1) {
+                    if (s[i] == s[j]) {
+                        dp[i][j] = 1;
+                    } else {
+                        dp[i][j] = 0;
+                    }
+                    //如果长度超过3个
+                } else {
+                    if (s[i] == s[j] && dp[i + 1][j - 1]) {
+                        dp[i][j] = 1;
+                    } else {
+                        dp[i][j] = 0;
+                    }
+                }
+            }
+        }
+        var temp = [];
+        for (i = 0; i < n; i++) {
+            if (dp[0][i]) {
+                dfs(temp, dp, s, 0, i, res);
+            }
+        }
+        return res;
+    }
+
+    function dfs(temp, dp, s, i, j, res) {
+        temp.push(s.substr(i, j - i + 1));
+        if (j == n - 1) {
+            res.push(temp.slice(0)); //到达单词结尾 把当前组合放入结果
+        }
+        j++;
+        for (var k = j; k < n; k++) {
+            if (dp[j][k]) dfs(temp, dp, s, j, k, res);
+        }
+
+        temp.pop(); //尾回溯 退出时删除本轮添加的字符串
+    }
+    console.log(partition("seeslaveidemonstrateyetartsnomedievalsees"));
+</script>
+
+</html>
