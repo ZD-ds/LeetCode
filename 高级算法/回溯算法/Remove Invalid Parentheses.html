@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+    /**
+删除最小数量的无效括号，使得输入的字符串有效，返回所有可能的结果。
+
+说明: 输入可能包含了除 ( 和 ) 以外的字符。
+
+示例 1:
+
+输入: "()())()"
+输出: ["()()()", "(())()"]
+示例 2:
+
+输入: "(a)())()"
+输出: ["(a)()()", "(a())()"]
+示例 3:
+
+输入: ")("
+输出: [""]
+*/
+    /**
+     * @param {string} s
+     * @return {string[]}
+     */
+    //使用BFS
+    var removeInvalidParentheses = function (s) {
+        var result = [];
+        if (s == "()" || s.length == 0) {
+            result.push(s);
+            return result;
+        }
+        var queue = [];
+        queue.push(s);
+        var set = new Set();
+        var isFound = false;
+        while (queue.length != 0) {
+            var curr = queue.shift();
+            if (isValid(curr)) {
+                result.push(curr);
+                isFound = true;
+            }
+            if (isFound) { //找到后不再进行裁剪
+                continue;
+            }
+            //裁剪过程
+            for (var i = 0; i < curr.length; i++) {
+                if (curr[i] == '(' || curr[i] == ')') { //只对'('或')'进行裁剪
+                    var str = "";
+                    if (i == curr.length - 1) {
+                        str = curr.substring(0, curr.length - 1);
+                    } else {
+                        str = curr.substring(0, i) + curr.substring(i + 1);
+                    }
+
+                    if (!set.has(str)) { //如果集合中还未有该字符串
+                        set.add(str)
+                        queue.push(str);
+                    }
+                }
+            }
+        };
+        if (result.length == 0) {
+            result.push("");
+        }
+        return result;
+    }
+
+
+    function isValid(s) {
+        var left = 0;
+        for (var i = 0; i < s.length; i++) {
+            var curr = s[i];
+            if (curr == '(') {
+                left++;
+            } else if (curr == ')') {
+                if (left != 0) {
+                    left--;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return left == 0;
+    }
+    console.log(removeInvalidParentheses("()())()"));
+
+    //这个是最快的
+    var removeInvalidParentheses = function (s) {
+        let len = s.length
+
+        // 1. 先将字符串处理一下 将开头的 ')' 和结尾的 '(' 删除
+        //     例如   'aa)()(ff' 处理成   'aa()ff'
+        let left = 0,
+            right = 0
+        while (left >= 0 && left < len && s[left] !== '(') {
+            if (s[left] === ')') {
+                s = s.slice(0, left) + s.slice(left + 1) // 不包含left
+                len--
+            } else {
+                left++
+            }
+        }
+        while (len - right - 1 >= 0 && right > -1 && s[len - right - 1] !== ')') {
+            if (s[len - right - 1] === '(') {
+                s = s.slice(0, len - right - 1) + s.slice(len - right) // 不包含left
+                len--
+            } else {
+                right++
+            }
+        }
+        // 特殊情况处理
+        if (len === 0)
+            return ['']
+        if (len === 1 && s[0] !== '(' && s[0] !== ')')
+            return [s]
+
+        // 2. 算出这个字符串到底需要删除几个 '(' 和几个 ')' 
+        //     例如  aa())(() 需要删除一个（和 一个）得到  aa()()
+        let delLeft = 0,
+            delRight = 0,
+            count = 0
+        for (let i = 0; i < len; i++) {
+            if (s[i] === '(')
+                count++
+            else if (s[i] === ')')
+                count--
+            if (count === -1) {
+                delRight += -1
+                count = 0
+            }
+        }
+        if (count > 0)
+            delLeft = count
+        else
+            delRight += count
+
+        // 判断字符串是否合法的函数
+        let isValid = function (s) {
+            let number = 0;
+            for (let i = 0, len = s.length; i < len; i++) {
+                if (s[i] === '(')
+                    number++
+                else if (s[i] === ')')
+                    number--;
+                if (number === -1) {
+                    return false;
+                }
+            }
+            return number === 0;
+        }
+
+        // 3.编写递归 知道了左右括号个被删除几次 
+        //   当删除完成时 就可以使用当前字符串加上剩余字符串  然后判断是否成立
+        //   number计数器
+        let res = []
+        let helper = function (str, number, length, delLeft, delRight) {
+            if (number < 0 || length > len)
+                return;
+            if (delLeft === 0 && delRight === 0) // 删除完成后判断字符串是否合法并存入结果数组
+                return isValid(str + s.slice(length)) && res.push(str + s.slice(length));
+            if (s[length] === '(') {
+                helper(str + '(', number + 1, length + 1, delLeft, delRight) // 不删除该(
+                delLeft > 0 && helper(str, number, length + 1, delLeft - 1, delRight) // 删除该(
+            } else if (s[length] === ')') {
+                helper(str + ')', number - 1, length + 1, delLeft, delRight) // 不删除该)
+                delRight > 0 && helper(str, number, length + 1, delLeft, delRight - 1) // 删除该)
+            } else {
+                helper(str + s[length], number, length + 1, delLeft, delRight)
+            }
+        }
+        helper('', 0, 0, delLeft, -delRight)
+        // 4. 数组去重 有可能会有多个相同的 答案被添加到数组
+        return Array.from(new Set([...res]))
+    };
+</script>
+
+</html>

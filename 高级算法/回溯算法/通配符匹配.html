@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+    /**
+给定一个字符串 (s) 和一个字符模式 (p) ，实现一个支持 '?' 和 '*' 的通配符匹配。
+
+'?' 可以匹配任何单个字符。
+'*' 可以匹配任意字符串（包括空字符串）。
+两个字符串完全匹配才算匹配成功。
+
+说明:
+
+s 可能为空，且只包含从 a-z 的小写字母。
+p 可能为空，且只包含从 a-z 的小写字母，以及字符 ? 和 *。
+示例 1:
+
+输入:
+s = "aa"
+p = "a"
+输出: false
+解释: "a" 无法匹配 "aa" 整个字符串。
+示例 2:
+
+输入:
+s = "aa"
+p = "*"
+输出: true
+解释: '*' 可以匹配任意字符串。
+示例 3:
+
+输入:
+s = "cb"
+p = "?a"
+输出: false
+解释: '?' 可以匹配 'c', 但第二个 'a' 无法匹配 'b'。
+示例 4:
+
+输入:
+s = "adceb"
+p = "*a*b"
+输出: true
+解释: 第一个 '*' 可以匹配空字符串, 第二个 '*' 可以匹配字符串 "dce".
+示例 5:
+
+输入:
+s = "acdcb"
+p = "a*c?b"
+输入: false
+*/
+    /**
+     * @param {string} s
+     * @param {string} p
+     * @return {boolean}
+     */
+    //超时了，但是正确，使用编译原理状态机的做法
+    // var isMatch = function (s, p) {
+    //     //其实就是编译原理的状态机
+    //     //首先生成一个状态机
+    //     var state = {
+    //         end: 0,
+    //     };
+    //     var curr = state;
+    //     for (var i = 0; i < p.length; i++) {
+    //         if (p[i] == "*") {
+    //             curr["*"] = {};
+
+    //         } else if (p[i] == "?") {
+    //             curr["?"] = {};
+    //             curr = curr["?"];
+    //         } else {
+    //             curr[p[i]] = {};
+    //             curr = curr[p[i]];
+    //         }
+    //     }
+    //     curr.end = 1;
+    //     return pattern(s, state, 0);
+    // };
+
+    // function pattern(s, state, index) {
+    //     if (index == s.length) {
+    //         if (state.end) return true;
+    //         return false;
+    //     }
+    //     var temp = state;
+    //     if (state[s[index]]) {
+    //         state = state[s[index]];
+    //         if (pattern(s, state, index + 1)) {
+    //             return true;
+    //         }
+    //         state = temp;
+    //     }
+
+    //     if (state["?"]) {
+    //         state = state["?"];
+    //         if (pattern(s, state, index + 1)) {
+    //             return true;
+    //         }
+    //         state = temp;
+    //     }
+
+    //     if (state["*"]) {
+    //         state = state;
+    //         if (pattern(s, state, index + 1)) {
+    //             return true;
+    //         }
+    //         state = temp;
+    //     }
+
+    //     return false;
+    // }
+    // console.log(isMatch("1", "?"));
+    /**
+    （一）状态
+
+f[i][j]表示s1的前i个字符，和s2的前j个字符，能否匹配
+（二）转移方程
+
+如果s1的第 i 个字符和s2的第 j 个字符相同，或者s2的第 j 个字符为 “.”
+f[i][j] = f[i - 1][j - 1]
+如果s2的第 j 个字符为 *
+若s2的第 j 个字符匹配空串, f[i][j] = f[i][j - 1]
+若s2的第 j 个字符匹配s1的第 i 个字符, f[i][j] = f[i - 1][j]
+这里注意不是 f[i - 1][j - 1]， 举个例子就明白了 (abc, a*) f[3][2] = f[2][2]
+（三）初始化
+
+f[0][i] = f[0][i - 1] && s2[i] == *
+即s1的前0个字符和s2的前i个字符能否匹配
+（四）结果
+
+f[m][n]
+
+作者：a380922457
+链接：https://leetcode-cn.com/problems/wildcard-matching/solution/dong-tai-gui-hua-si-yao-su-by-a380922457-4/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+    */
+    function isMatch(s, p) {
+        var m = s.length;
+        var n = p.length;
+        let f = Array(m + 1).fill(0).map(x => Array(n + 1).fill(0));
+        f[0][0] = true;
+        for (var i = 1; i <= n; i++) {
+            f[0][i] = f[0][i - 1] && p[i - 1] == '*';
+        }
+        for (i = 1; i <= m; i++) {
+            for (var j = 1; j <= n; j++) {
+                if (s.charAt(i - 1) == p.charAt(j - 1) || p.charAt(j - 1) == '?') {
+                    f[i][j] = f[i - 1][j - 1];
+                }
+                if (p.charAt(j - 1) == '*') {
+                    f[i][j] = f[i][j - 1] || f[i - 1][j];
+                }
+            }
+        }
+        return f[m][n];
+    }
+    //最快的方法
+    //这个算法就是把s碰到*就一直压缩尝试
+    var isMatch = function (s, p) {
+        let i = 0,
+            j = 0,
+            iStart = -1,
+            jStart = -1;
+        while (i < s.length) {
+            if (s[i] == p[j] || p[j] == '?') {
+                i++;
+                j++;
+            } else if (j < p.length && p[j] == '*') {
+                iStart = i;
+                jStart = j++;
+            } else if (iStart >= 0) {
+                i = ++iStart;
+                j = jStart + 1;
+            } else {
+                return false;
+            }
+        }
+        while (j < p.length && p[j] == '*') {
+            ++j;
+        }
+        return j == p.length;
+    };
+    console.log(isMatch("adceb", "*a*b"));
+</script>
+
+</html>
